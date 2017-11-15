@@ -38,7 +38,10 @@ statistics for your data before and after handling missing data.
 
 data <- read.csv("C:/Users/Uros Randelovic/Documents/R workspace/BUS 111/pilgrim2/data.csv",
                        stringsAsFactors=F, na.strings=c(NA,"NA"," NA"))
-
+data[is.na(data)]= "NULL"
+data$x9Age[data$X9Age=="NULL"]<-medianAge
+retainedCustomers=data[data$X0Billpay !="NULL",]
+retainedCustomers
 
 
 ```
