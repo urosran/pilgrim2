@@ -9,12 +9,12 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Pilgrim Bank Data: For the current assignment, read Pilgrim Bank Case A and Pilgrim Bank
-Case B from the Harvard CoursePack. We would be using the data in the file "Pilgrim Bank (A),
+Pilgrim Bank pilgrimData: For the current assignment, read Pilgrim Bank Case A and Pilgrim Bank
+Case B from the Harvard CoursePack. We would be using the pilgrimData in the file "Pilgrim Bank (A),
 (B) & (C) - Spreadsheet Supplement". Your report should at least cover the following details -
 
-###1. What is Pilgrim Bank's data problem? What is the final managerial objective?
-##### The Pilgrim Bnak's data probelm is that some of the variables include NA values due to the customers who dropped out from 1999 to 2000. This problem is going to make the later data analysis and interpretations more difficiult. Thus, we might need to drop the NA values and perform a separate analysis on the NA values in addition to the completed datas. There are also missing values for age and income which is another problem with the data. The final managerial objective is to determine whether the use of the electronic billpay product have any incremental impact on performance. 
+###1. What is Pilgrim Bank's pilgrimData problem? What is the final managerial objective?
+##### The Pilgrim Bnak's pilgrimData probelm is that some of the variables include NA values due to the customers who dropped out from 1999 to 2000. This problem is going to make the later pilgrimData analysis and interpretations more difficiult. Thus, we might need to drop the NA values and perform a separate analysis on the NA values in addition to the completed pilgrimDatas. There are also missing values for age and income which is another problem with the pilgrimData. The final managerial objective is to determine whether the use of the electronic billpay product have any incremental impact on performance. 
 
 ###2. Describe the measurement types of each variable
 ##### ID: Nominal Variable
@@ -26,70 +26,136 @@ Case B from the Harvard CoursePack. We would be using the data in the file "Pilg
 ##### 9Billpay and 0Billpay: Nominal (Binary)
 
 
-###3. How do you handle missing data in this dataset? Clearly mention if you are using data
+###3. How do you handle missing pilgrimData in this pilgrimDataset? Clearly mention if you are using pilgrimData
 
-##### We drop the data with NA for any 2000 vairbles such as 0Billpay, because those are the people who stop being a customer of the bank. However, we still need these data for analyzing retension. Additionally, we are filling in the NA 9Age with the median 9Age, and NA 9Inc with the median 9Inc. Thus, these values have no effect on the regression. 
+##### We drop the pilgrimData with NA for any 2000 vairbles such as 0Billpay, because those are the people who stop being a customer of the bank. However, we still need these pilgrimData for analyzing retension. Additionally, we are filling in the NA 9Age with the median 9Age, and NA 9Inc with the median 9Inc. Thus, these values have no effect on the regression. 
 
 imputation techniques (if so, which one) or dropping observations (in this case, mention
 how many observations). For whichever technique you choose, provide brief summary
-statistics for your data before and after handling missing data.
+statistics for your pilgrimData before and after handling missing pilgrimData.
 ```{r}
 #fill in for 2000 online or not
 #drop the rest
 
-data <- read.csv("C:/Users/Uros Randelovic/Documents/R workspace/BUS 111/pilgrim2/data.csv",
+pilgrimData <- read.csv("C:/Users/Uros Randelovic/Documents/R workspace/BUS 111/pilgrim2/Data.csv",
                        stringsAsFactors=F, na.strings=c(NA,"NA"," NA"))
-data[is.na(data)]= "NULL"
-data$x9Age[data$X9Age=="NULL"]<-medianAge
-retainedCustomers=data[data$X0Billpay !="NULL",]
-retainedCustomers
 
+
+pilgrimData[is.na(pilgrimData)]= "NULL"
+medianAge = median(pilgrimData$X9Age[pilgrimData$X9Age!="NULL"])
+pilgrimData$x9Age = pilgrimData$X9Age
+pilgrimData$x9Age[pilgrimData$X9Age=="NULL"]<- medianAge
+
+View (pilgrimData)
+#repeat the same with income 
+medianInc = median(pilgrimData$X9Inc[pilgrimData$X9Inc!="NULL"])
+pilgrimData$x9Inc = pilgrimData$X9Inc
+pilgrimData$x9Inc[pilgrimData$X9Inc=="NULL"]<- medianInc
+retainedCustomers=pilgrimData[pilgrimData$X0Billpay !="NULL",]
+retainedCustomers
+View (pilgrimData)
+
+#add a dummy if the cusotmer left (1) stayed (0)
+pilgrimData$left <- 0
+pilgrimData$left[pilgrimData$X0Billpay=="NULL"] <- 1
 
 ```
 4. Provide a brief summary of takeaways from Interim Deliverable-I. These could include
 key summary statistics tables or plots.
+
+
 ```{r}
-summary(data)
+summary(pilgrimData)
 
 
 ```
+
+
+
+
+
+
 ```{r}
+str(pilgrimData)
+
+#corrplot
+library(corrplot)
+
+corrdata <- pilgrimData[complete.cases(pilgrimData[c("X9Profit","X0Profit","X0Online","X0Billpay","X9Inc","X9Online","X9Age","X9Tenure")]),]
+
+
+corrplot(cor(pilgrimData), method="number",shade.col=NA, tl.col="black", tl.srt=45)
+
 str(data)
-
 ```
 
-Dropping the N/As and filling in the data 
-```{r}
-library("zoo")
-data$XLostCustomer <- as.numeric(data$X0Profit=="N/A" )
-#https://www.rdocumentation.org/packages/zoo/versions/1.8-0/topics/na.fill - zoo pacakge for filling
-na.fill(data$X0Profit, list(NA, NULL, NA))
-View(data)
-data <- data[complete.cases(data[c("X9Profit","X0Profit","X0Online","X0Billpay","X9Inc","X9Online","X9Age","X9Tenure")]),]
-str(data)
 
-```
 5. Compare the mean profitability of customers for the years 1999 and 2000 by their
 enrollment status in online banking or electronic billpay for those years. Clearly mention 
 the type of two-sample t-test you would be using, the null and alternate hypotheses for
 these tests. Interpret the results of these t-tests.
 ```{r}
-#wo-sample t-test you would be using - explanation of the three tests again
+#two-sample t-test you would be using - explanation of the three tests again
+
+
+
+
 ```
 6. Determine whether the use of the online channel affected customer profitability and
 retention in 1999. Clearly state the dependent and independent variables used in your
 regression analysis. Interpret the findings of this analysis, and note the R-squared.
 ```{r}
-#the issue here is that the online is not relevant to any - go to the graph 
+#the issue here is that the online is not relevant to any - go to the graph
+model1 = lm(train$X9Profit ~ train$X9Online)
+summary(model1)
+
+#generate a variable that uses model to predict the value of profit in 9
+
+train$predictProfit9 <- predict.lm(model1)
+
 ```
+
+
+
+```{r}
+#ask if this is correct 
+library(caTools)
+
+model2 <- glm (train$left ~ train$X9Online, family = binomial)
+summary(model2)
+
+```
+In the table above the coefficient on X9Online is -0.20315.  
+
+
+
+
+
 7. You may extend this analysis by further controlling for omitted variable biases. Mention
 which variables you are using as controls, and re-do the regression from part (6) after
 adding these controls. Interpret your findings and note the change in R-squared. [Hint:
-For this part, you may split your data into "train" and "test" datasets, and comment on
+For this part, you may split your pilgrimData into "train" and "test" pilgrimDatasets, and comment on
 which regression model provides the best fit. Alternatively, you may use any of likelihood
 or Information Criterion techniques discussed in class.]
 ```{r}
-#how do we control for the data
+#how do we control for the pilgrimData
+
+smp_size <- floor(0.75 * nrow(pilgrimData))
+## set the seed to make your partition reproductible
+set.seed(123)
+train_ind <- sample(seq_len(nrow(pilgrimData)), size = smp_size)
+#separate specific sets of data
+train <- pilgrimData[train_ind, ]
+test <- pilgrimData[-train_ind, ]
+
+
+
+
+
+
+
+
+
 
 
 ```
