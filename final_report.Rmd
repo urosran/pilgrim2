@@ -43,8 +43,10 @@ pilgrimData <- read.csv("C:/Users/Uros Randelovic/Documents/R workspace/BUS 111/
 
 pilgrimData[is.na(pilgrimData)]= "NULL"
 medianAge = median(pilgrimData$X9Age[pilgrimData$X9Age!="NULL"])
+
 pilgrimData$x9Age = pilgrimData$X9Age
 pilgrimData$x9Age[pilgrimData$X9Age=="NULL"]<- medianAge
+
 
 View (pilgrimData)
 #repeat the same with income 
@@ -55,6 +57,10 @@ retainedCustomers=pilgrimData[pilgrimData$X0Billpay !="NULL",]
 retainedCustomers
 View (pilgrimData)
 
+pilgrimData$x9Age <- as.numeric(pilgrimData$x9Age)
+pilgrimData$x9Inc <- as.numeric(pilgrimData$x9Inc)
+
+typeof(pilgrimData$x9Age)
 #add a dummy if the cusotmer left (1) stayed (0)
 pilgrimData$left <- 0
 pilgrimData$left[pilgrimData$X0Billpay=="NULL"] <- 1
@@ -81,12 +87,23 @@ str(pilgrimData)
 #corrplot
 library(corrplot)
 
-corrdata <- pilgrimData[complete.cases(pilgrimData[c("X9Profit","X0Profit","X0Online","X0Billpay","X9Inc","X9Online","X9Age","X9Tenure")]),]
+corrdata <- read.csv("C:/Users/Uros Randelovic/Documents/R workspace/BUS 111/pilgrim2/data.csv",
+                       stringsAsFactors=F, na.strings=c(NA,"NA"," NA"))
+
+corrdata <- corrdata[complete.cases(corrdata[c("X9Profit","X0Profit","X0Online","X0Billpay","X9Inc","X9Online","X9Age","X9Tenure")]),]
+
+#this is to check if there were any factors that correlate with the people staying or not
+View(corrdata)
+df <- subset(pilgrimData,select = c(X9Profit,X9Online,x9Age,x9Inc,left, X9Billpay))
+df$x9Age <- as.numeric(df$x9Age)
+df$x9Inc <- as.numeric(df$x9Inc)
 
 
-corrplot(cor(pilgrimData), method="number",shade.col=NA, tl.col="black", tl.srt=45)
 
-str(data)
+View(df)
+corrplot(cor(df), method="number",shade.col=NA, tl.col="black", tl.srt=45)
+typeof(df$x9Inc)
+
 ```
 
 
@@ -97,7 +114,10 @@ these tests. Interpret the results of these t-tests.
 ```{r}
 #two-sample t-test you would be using - explanation of the three tests again
 
+#two independet sample t test
 
+
+#two paird sample t test
 
 
 ```
@@ -106,12 +126,12 @@ retention in 1999. Clearly state the dependent and independent variables used in
 regression analysis. Interpret the findings of this analysis, and note the R-squared.
 ```{r}
 #the issue here is that the online is not relevant to any - go to the graph
-model1 = lm(train$X9Profit ~ train$X9Online)
+
+
+
+#model 1 - predicting the profit based on if the people were online or not 
+model1 = lm(pilgrimData$X9Profit ~ pilgrimData$X9Online)
 summary(model1)
-
-#generate a variable that uses model to predict the value of profit in 9
-
-train$predictProfit9 <- predict.lm(model1)
 
 ```
 
@@ -121,7 +141,7 @@ train$predictProfit9 <- predict.lm(model1)
 #ask if this is correct 
 library(caTools)
 
-model2 <- glm (train$left ~ train$X9Online, family = binomial)
+model2 <- glm (pilgrimData$left ~ pilgrimData$X9Online, family = binomial)
 summary(model2)
 
 ```
@@ -140,6 +160,7 @@ or Information Criterion techniques discussed in class.]
 ```{r}
 #how do we control for the pilgrimData
 
+#splitting the data to build a model
 smp_size <- floor(0.75 * nrow(pilgrimData))
 ## set the seed to make your partition reproductible
 set.seed(123)
@@ -152,8 +173,7 @@ test <- pilgrimData[-train_ind, ]
 
 
 
-
-
+testModel1 = lm(pilgrimData$X0Profit ~  pilgrimData$X9Profit, pilgrimData$x9Age, pilgrimData$x9Inc, pilgrimData$X9Tenure)
 
 
 
