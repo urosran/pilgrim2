@@ -27,6 +27,7 @@ Case B from the Harvard CoursePack. We would be using the data in the file "Pilg
 
 
 ###3. How do you handle missing data in this dataset? Clearly mention if you are using data
+
 ##### We drop the data with NA for any 2000 vairbles such as 0Billpay, because those are the people who stop being a customer of the bank. However, we still need these data for analyzing retension. Additionally, we are filling in the NA 9Age with the median 9Age, and NA 9Inc with the median 9Inc. Thus, these values have no effect on the regression. 
 
 imputation techniques (if so, which one) or dropping observations (in this case, mention
