@@ -17,6 +17,9 @@ Case B from the Harvard CoursePack. We would be using the pilgrimData in the fil
 ##### The Pilgrim Bnak's pilgrimData probelm is that some of the variables include NA values due to the customers who dropped out from 1999 to 2000. This problem is going to make the later pilgrimData analysis and interpretations more difficiult. Thus, we might need to drop the NA values and perform a separate analysis on the NA values in addition to the completed pilgrimDatas. There are also missing values for age and income which is another problem with the pilgrimData. The final managerial objective is to determine whether the use of the electronic billpay product have any incremental impact on performance. 
 
 ###2. Describe the measurement types of each variable
+```{r}
+str(pilgrimData)
+```
 ##### ID: Nominal Variable
 ##### 9Profit and 0Profit: Ratio
 ##### 9Age: Ordinal
@@ -27,85 +30,80 @@ Case B from the Harvard CoursePack. We would be using the pilgrimData in the fil
 
 
 ###3. How do you handle missing pilgrimData in this pilgrimDataset? Clearly mention if you are using pilgrimData
-
-##### We drop the pilgrimData with NA for any 2000 vairbles such as 0Billpay, because those are the people who stop being a customer of the bank. However, we still need these pilgrimData for analyzing retension. Additionally, we are filling in the NA 9Age with the median 9Age, and NA 9Inc with the median 9Inc. Thus, these values have no effect on the regression. 
-
-imputation techniques (if so, which one) or dropping observations (in this case, mention
-how many observations). For whichever technique you choose, provide brief summary
-statistics for your pilgrimData before and after handling missing pilgrimData.
+##### Our group drops the pilgrimData with NA for any 2000 variables such as 0Billpay, because those are the people who stop being customers of the bank. However, our group still need these pilgrimData for performing further analysis on retention. 
+##### Additionally, our group fills in the NA 9Age with the median 9Age, and NA 9Inc with the median 9Inc. Thus, these values have no effect on the summary statistics of the dataset. 
+##### Overall, our group drops any data which has NA in 0Online, 0Profit, and 0Billpay. We fill in the NA in 9Age and 9Inc with according median values. This strategy allows us to have a large enough dataset to work with rather than drop every data with any kind of NA. 
 ```{r}
-#fill in for 2000 online or not
-#drop the rest
-
 pilgrimData <- read.csv("C:/Users/Uros Randelovic/Documents/R workspace/BUS 111/pilgrim2/Data.csv",
                        stringsAsFactors=F, na.strings=c(NA,"NA"," NA"))
 
-
+#filling in the NAs with NULL
 pilgrimData[is.na(pilgrimData)]= "NULL"
-medianAge = median(pilgrimData$X9Age[pilgrimData$X9Age!="NULL"])
 
+#fillinf in the median of X9Age for NULL X9Age, then generate the X9Age colunm into x9Age column
+medianAge = median(pilgrimData$X9Age[pilgrimData$X9Age!="NULL"])
 pilgrimData$x9Age = pilgrimData$X9Age
 pilgrimData$x9Age[pilgrimData$X9Age=="NULL"]<- medianAge
 
-
-View (pilgrimData)
-#repeat the same with income 
+#repeat the same with income , then generate the X9Inc into x9Inc column
 medianInc = median(pilgrimData$X9Inc[pilgrimData$X9Inc!="NULL"])
 pilgrimData$x9Inc = pilgrimData$X9Inc
 pilgrimData$x9Inc[pilgrimData$X9Inc=="NULL"]<- medianInc
 retainedCustomers=pilgrimData[pilgrimData$X0Billpay !="NULL",]
-retainedCustomers
-View (pilgrimData)
 
 pilgrimData$x9Age <- as.numeric(pilgrimData$x9Age)
 pilgrimData$x9Inc <- as.numeric(pilgrimData$x9Inc)
 
-typeof(pilgrimData$x9Age)
 #add a dummy if the cusotmer left (1) stayed (0)
 pilgrimData$left <- 0
 pilgrimData$left[pilgrimData$X0Billpay=="NULL"] <- 1
-
-```
-4. Provide a brief summary of takeaways from Interim Deliverable-I. These could include
-key summary statistics tables or plots.
-
-
-```{r}
-summary(pilgrimData)
-
+#generate retained column, which is the opposite of left column
+pilgrimData$retained <- 0
+pilgrimData$retained[pilgrimData$left==0] <- 1
 
 ```
 
-
-
-
-
+###4. Provide a brief summary of takeaways from Interim Deliverable-I. These could include key summary statistics tables or plots.
+```{r}
+#online banking customers
+table(pilgrimData$X9Online)
+table(pilgrimData$X0Online)
+#profit
+pilgrimData$X0Profit <- as.numeric(pilgrimData$X0Profit)
+summary(pilgrimData$X9Profit)
+summary(pilgrimData$X0Profit)
+#billpay
+pilgrimData$X0Billpay <- as.numeric(pilgrimData$X0Billpay)
+table(pilgrimData$X9Billpay)
+table(pilgrimData$X0Billpay)
+```
+##### Online banking: In 1999, there are 3854 online banking customers, and 27780 offline banking customer. The online banking customers is 12.18% (3854/(3854+27780)) of all customers. In 2000, there are 5256 online banking customers, and 21159 offline banking customers. The online banking customers is 19.90% (5256/(5256+21159)) of all customers. Thus, based on the basic summary statics our group present, there this an increase in the percentage of online banking customers vs. all customers. 
+##### Profit: The mean and the median profit of 1999 are 111.5 and 9.0. The mean and the median profit of 2000 are 144.8 and 23.0. Both the meadian anf the mean profit have increased over the year. In addition, since there is no NULL for X9Profit, there are no customers who are not 1999 customers but are added for 2000. 
+##### Billpay: In 1999, there are 528 electronic billpay customers, and 31106 paper billpay banking customer. The electronic billpay customers is 1.67% (528/(528+31106)) of all customers. In 2000, there are 798 electronic billpay  customers, and 25617 paper billpay customers. The electronic billpay  customers is 3.02% (798/(798+25617)) of all customers. Thus, based on the basic summary statics our group present, there this an increase in the percentage of electronic billpay customers vs. all customers. 
 
 ```{r}
-str(pilgrimData)
-
 #corrplot
+
 library(corrplot)
 
 corrdata <- read.csv("C:/Users/Uros Randelovic/Documents/R workspace/BUS 111/pilgrim2/data.csv",
                        stringsAsFactors=F, na.strings=c(NA,"NA"," NA"))
 
-corrdata <- corrdata[complete.cases(corrdata[c("X9Profit","X0Profit","X0Online","X0Billpay","X9Inc","X9Online","X9Age","X9Tenure")]),]
+#we dropped all the NA values to performe the correlation analysis 
+corrdata <- corrdata[complete.cases(corrdata[c("X9Profit","X0Profit","X0Online","X0Billpay","X9Inc",
+                                               "X9Online","X9Age","X9Tenure")]),]
 
 #this is to check if there were any factors that correlate with the people staying or not
 View(corrdata)
 df <- subset(pilgrimData,select = c(X9Profit,X9Online,x9Age,x9Inc,left, X9Billpay))
 df$x9Age <- as.numeric(df$x9Age)
 df$x9Inc <- as.numeric(df$x9Inc)
-
-
-
 View(df)
 corrplot(cor(df), method="number",shade.col=NA, tl.col="black", tl.srt=45)
-typeof(df$x9Inc)
-
 ```
-
+##### Besed on the presented correlation table, our group concludes that there is no strong correlation among variables. The strongest correlation based on the table is the positive correlation between X9Online and X9Billpay of 0.35.
+#################################################################Annabelle above#####################################################################
+#####################################################################################################################################################
 
 5. Compare the mean profitability of customers for the years 1999 and 2000 by their
 enrollment status in online banking or electronic billpay for those years. Clearly mention 
